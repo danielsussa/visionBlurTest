@@ -1,0 +1,71 @@
+{
+  "RG_F1":{
+    "cart":{"text":"carteira de identidade","threshold":0.85},
+    "val_terr":{"text":"valida em todo o territorio nacional","threshold":0.7},
+    "assin":{"text":"assinatura do diretor","threshold":0.8}
+  },
+  "CPF":{
+    "min_faz":{"text":"ministerio da fazenda","threshold":0.85},
+    "secret":{"text":"receita federal","threshold":0.9},
+    "compro":{"text":"comprovante de inscrição cpf","threshold":0.85},
+  },
+  "CNH":{
+    "depto":{"text":"departamento nacional de transito","threshold":0.80},
+    "carte":{"text":"carteira nacional de habilitacao","threshold":0.80}
+  },
+  "CART_SUS":{
+    "depto":{"text":"sistema unico de saude","threshold":0.80},
+    "carte":{"text":"cartao nacional de saude","threshold":0.80}
+  },
+  "CTPS":{
+    "minis":{"text":"ministerio do trabalho","threshold":0.80},
+    "carte":{"text":"carteira de trabalho","threshold":0.85},
+    "qual":{"text":"qualificacao civil","threshold":0.80},
+    "estr":{"text":"chegada ao brasil em","threshold":0.80}
+  },
+
+  "TITULO_ELEITOR":{
+    "repub":{"text":"republica federativa do brasil","threshold":0.80},
+    "TITUL":{"text":"titulo eleitoral","threshold":0.85}
+  },
+
+  "ESCOLARIDADE":{
+    "secret":{"text":"secretaria de estado da educacao","threshold":0.80},
+    "certif":{"text":"certificado de conclusao de curso","threshold":0.80},
+    "instituto":{"text":"insituto de ensino","threshold":0.90},
+    "titulo":{"text":"confere o titulo de","threshold":0.90}
+  },
+
+  "NASCIMENTO":{
+    "certid":{"text":"certidao de nascimento","threshold":0.80},
+    "regis":{"text":"registro civil","threshold":0.85}
+  },
+
+  "ALISTAMENTO":{
+    "dispensado":{"text":"dispensado do servico militar","threshold":0.75},
+    "delegado":{"text":"delegado do servico","threshold":0.75}
+  },
+
+  "ENDERECO":{
+    "eletro":{"text":"eletropaulo","threshold":0.95},
+    "delegado":{"text":"vencimento","threshold":1},
+    "prefeit":{"text":"prefeitura municipal","threshold":1},
+    "comun":{"text":"comunicado importante","threshold":0.9}
+  },
+
+  "PIS":{
+    "dispensado":{"text":"caixa","threshold":0.95},
+    "delegado":{"text":"cartao do cidadao","threshold":0.90}
+  },
+
+  "CARTEIRA_TRABALHO":{
+    "minist":{"text":"ministerio do trabalho e emprego","threshold":0.80},
+    "carteira":{"text":"carteira de trabalho","threshold":0.90}
+  },
+
+  "CONJUGE":{
+    "minist":{"text":"uniao estavel","threshold":0.90},
+    "reg":{"text":"registros de casamentos","threshold":0.90},
+    "casar":{"text":"casaram","threshold":1}
+  }
+}
