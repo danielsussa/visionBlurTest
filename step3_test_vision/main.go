@@ -2,85 +2,71 @@ package main
 
 import (
 	"os"
-	"log"
-	"encoding/csv"
-	"bufio"
-	"io"
-	"fmt"
-	"github.com/go-resty/resty"
+
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"strings"
 	"strconv"
-	"github.com/danielsussa/checkBlurFactor/shared"
+	"strings"
+
+	"github.com/go-resty/resty"
+
+	"github.com/danielsussa/visionBlurTest/shared"
 )
 
 //VISION
 
 type responseVision struct {
-	Keywords []keywords
+	Keywords   map[string]keywords
+	Phrases    map[string]phrasesKind
 	BorderCtrl borderCtrl
-	ImageSpec imageSpec
+	ImageSpec  imageSpec
 }
 
 type keywords struct {
-	Word string
-	Out string
-	Score float64
+	Word     string
+	Out      string
+	Score    float64
+	Pass     bool
 	Position int
 }
 
 type borderCtrl struct {
-	Up int
-	Down int
-	Left int
+	Up    int
+	Down  int
+	Left  int
 	Right int
 }
 
 type imageSpec struct {
-	Width int
+	Width  int
 	Height int
 }
 
-//Classify
-
-type classify struct {
-	Classification string
-	Formations []formation
+type phrasesKind struct {
+	Text      string
+	Threshold float64
+	Pass      bool
 }
 
-type formation struct {
-	Words []string
-	Dist []int
-}
-
-
-var query map[string]interface{}
-
-var classifications []classify
-
-func main(){
-
-	//Load Inteligence
-	loadAI()
+func main() {
 
 	//Load CSV
 	docs := shared.LoadSource()
 
 	selectedIndex := make(map[int]bool)
 
-	for _,sel := range strings.Split(os.Getenv("selected"),","){
-		if sel == ""{
+	for _, sel := range strings.Split(os.Getenv("selected"), ",") {
+		if sel == "" {
 			continue
 		}
-		i,_ := strconv.Atoi(sel)
+		i, _ := strconv.Atoi(sel)
 		selectedIndex[i] = true
 	}
 
-
 	selectedDoc := os.Getenv("doc")
 
-	for i,doc := range docs {
+	for i, doc := range docs {
 
 		if len(selectedIndex) > 0 && selectedIndex[i] == false {
 			continue
@@ -93,75 +79,104 @@ func main(){
 		if i == 0 {
 			continue
 		}
-		if doc.Foto != ""{
-			run(doc.Foto,i)
+
+		//Run RG Validation
+		if doc.Doc == "c2069ecf-ea5d-4029-9960-6f802392c6d7" {
+			runRG(doc.Foto1, doc.Foto2, i)
 		}
-		if doc.Foto1 != ""{
-			run(doc.Foto1,i)
-		}
-		if doc.Foto2 != ""{
-			run(doc.Foto2,i)
-		}
-		if doc.Foto3 != ""{
-			run(doc.Foto3,i)
-		}
-		if doc.Foto4 != ""{
-			run(doc.Foto4,i)
-		}
-		if doc.Foto5 != ""{
-			run(doc.Foto5,i)
-		}
-		if doc.Foto6 != ""{
-			run(doc.Foto6,i)
-		}
+
+		//if doc.Foto != ""{
+		//	run(doc.Foto,i)
+		//}
+		//if doc.Foto1 != ""{
+		//	run(doc.Foto1,i)
+		//}
+		//if doc.Foto2 != ""{
+		//	run(doc.Foto2,i)
+		//}
+		//if doc.Foto3 != ""{
+		//	run(doc.Foto3,i)
+		//}
+		//if doc.Foto4 != ""{
+		//	run(doc.Foto4,i)
+		//}
+		//if doc.Foto5 != ""{
+		//	run(doc.Foto5,i)
+		//}
+		//if doc.Foto6 != ""{
+		//	run(doc.Foto6,i)
+		//}
 	}
 }
 
-func loadAI(){
-	query := make(map[string]interface{},0)
+func runRG(pathFrente string, pathVerso string, index int) {
+	fmt.Println("Running analizes:", index)
 
-	file, err := ioutil.ReadFile("./step3_test_vision/classify.json")
+	docKind := "null"
 
-	if err != nil {
-		log.Fatal("Error opening file:", err)
-	}
-	json.Unmarshal(file,&classifications)
-
-	k := make([]map[string]interface{},0)
-
-	for _,class := range classifications{
-		for _, form := range class.Formations {
-			for _, word := range form.Words {
-				k = append(k, map[string]interface{}{"word":word})
-			}
-		}
-	}
-	query["keywords"] = k
-}
-
-func run(path string,index int){
-	fmt.Println("Running analizes:",index)
-	resp := analizeVision(path)
-
-	//Compare AI
-	for _,class := range classifications{
-
-	}
-
-
-
-	img := downloadImage(path)
-	ioutil.WriteFile(fmt.Sprintf("src/blur_test/%d_image.jpg",index), []byte(img), 0777)
-}
-
-
-func downloadImage(path string)(r []byte){
 	query := map[string]interface{}{
+		"keywords": map[string]interface{}{
+			"nome": map[string]interface{}{},
+			"mae":  map[string]interface{}{},
+		},
+		"phrases": map[string]interface{}{
+			"nome_mae": map[string]interface{}{"text": "nome [SKP] mae", "threshold": 0.8},
+		},
 	}
+
+	vis := analizeVision(pathFrente, query)
+
+	//Check for words
+	for _, word := range vis.Keywords {
+		if word.Pass {
+			docKind = "rg"
+			break
+		}
+	}
+
+	//Check for phrases
+	for _, phrase := range vis.Phrases {
+		if phrase.Pass {
+			docKind = "RG"
+			break
+		}
+	}
+
+	// Check Spec of doc to set quality
+	ver, hor := checkBorder(vis.BorderCtrl, vis.ImageSpec)
+
+	docQual := "ok"
+
+	if ver < 0.3 || hor < 0.3 {
+		docQual = "dist"
+	}
+
+	if ver > 0.8 && hor > 0.8 {
+		docQual = "OK"
+	}
+
+	if ver > 0.98 || hor > 0.98 {
+		docQual = "dist"
+	}
+
+	img := downloadImage(pathFrente)
+	ioutil.WriteFile(fmt.Sprintf("src/rg_test/%d_%s_%s.jpg", index, docKind, docQual), []byte(img), 0777)
+}
+
+func checkBorder(border borderCtrl, spec imageSpec) (ver float64, hor float64) {
+	verRatio := float64(border.Right-border.Left) / float64(spec.Width)
+	horRatio := float64(border.Down-border.Up) / float64(spec.Height)
+
+	return verRatio, horRatio
+
+}
+
+func downloadImage(path string) (r []byte) {
+	query := map[string]interface{}{}
 
 	resp, err := resty.R().SetHeader("Content-Type", "application/json").
 		SetBody(query).
-		Post("http://localhost:8085/download/"+path)
+		Post("http://localhost:8085/download/" + path)
 
 	if err != nil {
 		panic(err)
@@ -170,16 +185,16 @@ func downloadImage(path string)(r []byte){
 	return resp.Body()
 }
 
-func analizeVision(path string)(r responseVision){
+func analizeVision(path string, query map[string]interface{}) (r responseVision) {
 
 	resp, err := resty.R().SetHeader("Content-Type", "application/json").
 		SetBody(query).
-		Post("http://localhost:8085/vision/"+path)
+		Post("http://localhost:8085/vision/" + path)
 
 	if err != nil {
 		panic(err)
 	}
 
-	json.Unmarshal(resp.Body(),&r)
+	json.Unmarshal(resp.Body(), &r)
 	return
 }

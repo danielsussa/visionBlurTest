@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/danielsussa/checkBlurFactor/shared"
+
 	"github.com/go-resty/resty"
 	"fmt"
 	"io/ioutil"
 	"acesso.io/acessorh/datasource/srcdoc"
 
 	"acesso.io/acessorh/lib/uuid"
+	"github.com/danielsussa/visionBlurTest/shared"
 )
 
 func main(){

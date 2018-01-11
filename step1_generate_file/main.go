@@ -20,6 +20,7 @@ type Docs struct {
 	Foto4 foto
 	Foto5 foto
 	Foto6 foto
+	Cep string
 }
 
 type foto struct {
@@ -36,7 +37,7 @@ func main(){
 	docs := getDocs()
 
 
-	finalLine := fmt.Sprintf("doc,foto,foto1,foto2,foto3,foto4,foto5,foto6\n")
+	finalLine := fmt.Sprintf("doc,foto,foto1,foto2,foto3,foto4,foto5,foto6,cep\n")
 	line := ""
 
 	for k, doc := range docs {
@@ -70,7 +71,7 @@ func main(){
 			}
 
 			if i == 6 {
-				line+= doc.Foto6.Path
+				line+= doc.Foto6.Path + ","
 			}
 
 			if i == 6 {
@@ -78,6 +79,14 @@ func main(){
 			}
 			i++
 		}
+
+		//Doc endereço
+		if doc.Doc.String() == "7d5eb9da-b50e-49f7-8c3e-3ee5877eb620"{
+			line+= doc.Cep + ","
+		}else {
+			line+= ","
+		}
+
 		line += "\n"
 
 		if k % 500 == 0 || k == 0 {
