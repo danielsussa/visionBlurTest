@@ -110,21 +110,40 @@ func main() {
 }
 
 func runRG(pathFrente string, pathVerso string, index int) {
-	fmt.Println("Running analizes:", index)
 
-	docKind := "null"
-
-	query := map[string]interface{}{
+	queryVerso := map[string]interface{}{
 		"keywords": map[string]interface{}{
-			"nome": map[string]interface{}{},
-			"mae":  map[string]interface{}{},
+			"data":       map[string]interface{}{"threshold": 0.9},
+			"nascimento": map[string]interface{}{"threshold": 0.9, "nextTo": "data"},
+			"valida":     map[string]interface{}{"threshold": 0.9},
+			"todo":       map[string]interface{}{"threshold": 0.9, "nextTo": "valida"},
+			"territorio": map[string]interface{}{"threshold": 0.9, "nextTo": "todo"},
 		},
 		"phrases": map[string]interface{}{
-			"nome_mae": map[string]interface{}{"text": "nome [SKP] mae", "threshold": 0.8},
+			"data_nasc":   map[string]interface{}{"text": "data [SKP] nascimento", "threshold": 0.8},
+			"valida_todo": map[string]interface{}{"text": "valida [SKP] todo territorio", "threshold": 0.8},
 		},
 	}
 
-	vis := analizeVision(pathFrente, query)
+	queryFrente := map[string]interface{}{
+		"keywords": map[string]interface{}{
+			"republica":  map[string]interface{}{"threshold": 0.9},
+			"federativa": map[string]interface{}{"threshold": 0.9, "nextTo": "republica"},
+			"brasil":     map[string]interface{}{"threshold": 0.9, "nextTo": "federativa"},
+		},
+		"phrases": map[string]interface{}{
+			"republica": map[string]interface{}{"text": "republica federativa [SKP] brasil", "threshold": 0.8},
+		},
+	}
+	runAI(pathFrente, queryFrente, fmt.Sprintf("%d_frente", index))
+	runAI(pathVerso, queryVerso, fmt.Sprintf("%d_verso", index))
+
+}
+
+func runAI(path string, query map[string]interface{}, id string) {
+	vis := analizeVision(path, query)
+
+	docKind := "null"
 
 	//Check for words
 	for _, word := range vis.Keywords {
@@ -156,11 +175,11 @@ func runRG(pathFrente string, pathVerso string, index int) {
 	}
 
 	if ver > 0.98 || hor > 0.98 {
-		docQual = "dist"
+		docQual = "crop"
 	}
 
-	img := downloadImage(pathFrente)
-	ioutil.WriteFile(fmt.Sprintf("src/rg_test/%d_%s_%s.jpg", index, docKind, docQual), []byte(img), 0777)
+	img := downloadImage(path)
+	ioutil.WriteFile(fmt.Sprintf("src/rg_test/%s_%s_%s.jpg", id, docKind, docQual), []byte(img), 0777)
 }
 
 func checkBorder(border borderCtrl, spec imageSpec) (ver float64, hor float64) {

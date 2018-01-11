@@ -1,16 +1,16 @@
 package shared
 
 import (
-	"encoding/csv"
 	"bufio"
+	"encoding/csv"
 	"io"
-	"os"
 	"log"
+	"os"
 )
 
 type Docs struct {
-	Doc string
-	Foto string
+	Doc   string
+	Foto  string
 	Foto1 string
 	Foto2 string
 	Foto3 string
@@ -19,8 +19,8 @@ type Docs struct {
 	Foto6 string
 }
 
-func LoadSource()(docs []Docs){
-	csvFile, err := os.Open("./src/import/export_final.csv")
+func LoadSource() (docs []Docs) {
+	csvFile, err := os.Open("./src/import/import.csv")
 
 	if err != nil {
 		log.Fatal("Error opening file:", err)
@@ -37,15 +37,14 @@ func LoadSource()(docs []Docs){
 		}
 
 		doc := Docs{
-			Doc:line[0],
-			Foto:line[1],
-			Foto1:line[2],
-			Foto2:line[3],
-			Foto3:line[4],
-			Foto4:line[5],
-			Foto5:line[6],
-			Foto6:line[7],
-
+			Doc:   line[0],
+			Foto:  line[1],
+			Foto1: line[2],
+			Foto2: line[3],
+			Foto3: line[4],
+			Foto4: line[5],
+			Foto5: line[6],
+			Foto6: line[7],
 		}
 		docs = append(docs, doc)
 	}

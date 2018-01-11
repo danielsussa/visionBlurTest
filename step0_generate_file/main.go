@@ -80,26 +80,23 @@ func main() {
 		}
 
 		//Doc endereço
-		if doc.Doc.String() == "7d5eb9da-b50e-49f7-8c3e-3ee5877eb620" {
-			line += doc.Cep + ","
-		} else {
-			line += ","
-		}
+		//if doc.Doc.String() == "7d5eb9da-b50e-49f7-8c3e-3ee5877eb620" {
+		//	line += doc.Cep
+		//}
+		//line += ","
 
 		line += "\n"
 
-		if k%20000 == 0 {
+		if k%5000 == 0 {
 			//fmt.Println("Saving report on:", "export.csv")
 			//ioutil.WriteFile(fmt.Sprintf("export_%d.csv",k), []byte(line), 0777)
 			finalLine += line
-			fmt.Println(k, len(finalLine))
-			ioutil.WriteFile(fmt.Sprintf("export_final_%d.csv", k), []byte(line), 0777)
 			line = ""
 		}
 	}
 
-	fmt.Println("Saving report on:", "export_final.csv")
-	ioutil.WriteFile("export_final.csv", []byte(finalLine), 0777)
+	fmt.Println("Saving report on:", "import.csv")
+	ioutil.WriteFile("import.csv", []byte(finalLine), 0777)
 
 }
 
