@@ -115,6 +115,7 @@ func runRG(pathFrente string, pathVerso string, index int) {
 		"keywords": map[string]interface{}{
 			"data":       map[string]interface{}{"threshold": 0.9},
 			"nascimento": map[string]interface{}{"threshold": 0.9, "nextTo": "data"},
+
 			"valida":     map[string]interface{}{"threshold": 0.9},
 			"todo":       map[string]interface{}{"threshold": 0.9, "nextTo": "valida"},
 			"territorio": map[string]interface{}{"threshold": 0.9, "nextTo": "todo"},
@@ -130,23 +131,32 @@ func runRG(pathFrente string, pathVerso string, index int) {
 			"republica":  map[string]interface{}{"threshold": 0.9},
 			"federativa": map[string]interface{}{"threshold": 0.9, "nextTo": "republica"},
 			"brasil":     map[string]interface{}{"threshold": 0.9, "nextTo": "federativa"},
+
+			"departamento": map[string]interface{}{"threshold": 0.9},
+			"nacional":     map[string]interface{}{"threshold": 0.9, "nextTo": "departamento"},
+			"transito":     map[string]interface{}{"threshold": 0.9, "nextTo": "nacional"},
 		},
 		"phrases": map[string]interface{}{
 			"republica": map[string]interface{}{"text": "republica federativa [SKP] brasil", "threshold": 0.8},
+			"transito":  map[string]interface{}{"text": "departamento nacional [SKP] transito", "threshold": 0.8},
 		},
 	}
-	runAI(pathFrente, queryFrente, fmt.Sprintf("%d_frente", index))
-	runAI(pathVerso, queryVerso, fmt.Sprintf("%d_verso", index))
+	runAiRG(pathFrente, queryFrente, fmt.Sprintf("%d_frente", index))
+	runAiRG(pathVerso, queryVerso, fmt.Sprintf("%d_verso", index))
 
 }
 
-func runAI(path string, query map[string]interface{}, id string) {
+func runAiRG(path string, query map[string]interface{}, id string) {
 	vis := analizeVision(path, query)
 
 	docKind := "null"
 
 	//Check for words
-	for _, word := range vis.Keywords {
+	for key, word := range vis.Keywords {
+		if word.Pass == true && key == "transito" {
+			docKind = "wrong_cpf"
+			break
+		}
 		if word.Pass {
 			docKind = "rg"
 			break
@@ -154,7 +164,11 @@ func runAI(path string, query map[string]interface{}, id string) {
 	}
 
 	//Check for phrases
-	for _, phrase := range vis.Phrases {
+	for key, phrase := range vis.Phrases {
+		if phrase.Pass == true && key == "transito" {
+			docKind = "WRONG_CPF"
+			break
+		}
 		if phrase.Pass {
 			docKind = "RG"
 			break
