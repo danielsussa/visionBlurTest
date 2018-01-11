@@ -1,34 +1,34 @@
 package main
 
 import (
-	"gopkg.in/mgo.v2"
-	"acesso.io/acessorh/context/ctxcfg"
-	"gopkg.in/mgo.v2/bson"
 	"fmt"
 	"io/ioutil"
+
+	"acesso.io/acessorh/context/ctxcfg"
 	"github.com/acesso-io/uuid"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var mongo *mgo.Database
 
 type Docs struct {
-	Doc uuid.UUID
-	Foto foto
+	Doc   uuid.UUID
+	Foto  foto
 	Foto1 foto
 	Foto2 foto
 	Foto3 foto
 	Foto4 foto
 	Foto5 foto
 	Foto6 foto
-	Cep string
+	Cep   string
 }
 
 type foto struct {
 	Path string
 }
 
-
-func main(){
+func main() {
 	ctxcfg.New("acessorh")
 
 	session, _ := mgo.Dial(ctxcfg.Env.MongoHost)
@@ -36,42 +36,41 @@ func main(){
 
 	docs := getDocs()
 
-
 	finalLine := fmt.Sprintf("doc,foto,foto1,foto2,foto3,foto4,foto5,foto6,cep\n")
 	line := ""
 
 	for k, doc := range docs {
-		line += doc.Doc.String() +","
+		line += doc.Doc.String() + ","
 
 		i := 0
 		for {
 
 			if i == 0 {
-				line+= doc.Foto.Path + ","
+				line += doc.Foto.Path + ","
 			}
 
 			if i == 1 {
-				line+= doc.Foto1.Path + ","
+				line += doc.Foto1.Path + ","
 			}
 
 			if i == 2 {
-				line+= doc.Foto2.Path + ","
+				line += doc.Foto2.Path + ","
 			}
 
 			if i == 3 {
-				line+= doc.Foto3.Path + ","
+				line += doc.Foto3.Path + ","
 			}
 
 			if i == 4 {
-				line+= doc.Foto4.Path + ","
+				line += doc.Foto4.Path + ","
 			}
 
 			if i == 5 {
-				line+= doc.Foto5.Path + ","
+				line += doc.Foto5.Path + ","
 			}
 
 			if i == 6 {
-				line+= doc.Foto6.Path + ","
+				line += doc.Foto6.Path + ","
 			}
 
 			if i == 6 {
@@ -81,22 +80,20 @@ func main(){
 		}
 
 		//Doc endereço
-		if doc.Doc.String() == "7d5eb9da-b50e-49f7-8c3e-3ee5877eb620"{
-			line+= doc.Cep + ","
-		}else {
-			line+= ","
+		if doc.Doc.String() == "7d5eb9da-b50e-49f7-8c3e-3ee5877eb620" {
+			line += doc.Cep + ","
+		} else {
+			line += ","
 		}
 
 		line += "\n"
 
-		if k % 500 == 0 || k == 0 {
-			fmt.Println(k)
-		}
-
-		if k % 5000 == 0 {
+		if k%20000 == 0 {
 			//fmt.Println("Saving report on:", "export.csv")
 			//ioutil.WriteFile(fmt.Sprintf("export_%d.csv",k), []byte(line), 0777)
 			finalLine += line
+			fmt.Println(k, len(finalLine))
+			ioutil.WriteFile(fmt.Sprintf("export_final_%d.csv", k), []byte(line), 0777)
 			line = ""
 		}
 	}
@@ -106,7 +103,18 @@ func main(){
 
 }
 
-func getDocs()(docs []Docs){
-	mongo.C("srcdoc").Find(bson.M{}).All(&docs)
+func getDocs() (docs []Docs) {
+
+	uid, _ := uuid.Parse("541c9413-2979-419e-b3bc-b13dc189ad60")
+
+	err := mongo.C("srcdoc").Find(bson.M{
+		"_deleted": false,
+		"doc":      bson.M{"$nin": []bson.Binary{{Kind: 0x04, Data: uid[:]}}},
+	}).All(&docs)
+
+	if err != nil {
+		panic(err)
+	}
+
 	return
 }
